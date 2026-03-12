@@ -263,7 +263,9 @@ export function ApiKeysListPage() {
           <div className="divide-y divide-border">
             {keys.map((k) => (
               <div key={k.id} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4">
-                <div>
+                <div className="flex items-center gap-2">
+                  <KeyIcon size={14} className="text-muted-foreground shrink-0" />
+                  <div>
                   <div className="text-sm font-medium">{k.name}</div>
                   <div className="text-xs text-muted-foreground font-mono">
                     {k.keyPrefix}...
@@ -271,6 +273,7 @@ export function ApiKeysListPage() {
                       Created {formatDate(k.createdAt)}
                       {k.lastUsedAt && <span> · Last used {timeAgo(k.lastUsedAt)}</span>}
                     </span>
+                  </div>
                   </div>
                 </div>
                 <button

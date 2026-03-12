@@ -7,6 +7,7 @@ import { ChatNavProvider } from '../../chat/components/chat-nav-context.js';
 import { PencilIcon, ClusterIcon } from '../../chat/components/icons.js';
 import { triggerRoleManually, stopRoleAction, getCluster, getWorkerPrompts } from '../actions.js';
 import { CodeLogView } from './code-log-view.jsx';
+import { ConfirmDialog } from '../../chat/components/ui/confirm-dialog.js';
 
 const MAX_LOG_ENTRIES = 500;
 
@@ -247,7 +248,7 @@ export function ClusterConsolePage({ session, clusterId }) {
 
 function RoleHeaderButton({ roleId, roleName, running, max, clusterId }) {
   const [triggering, setTriggering] = useState(false);
-  const [rateLimited, setRateLimited] = useState(false);
+  const [warning, setWarning] = useState(null); // { title, description }
 
   const handleRun = async (e) => {
     e.preventDefault();
@@ -255,53 +256,64 @@ function RoleHeaderButton({ roleId, roleName, running, max, clusterId }) {
     setTriggering(true);
     try {
       const result = await triggerRoleManually(roleId);
-      if (result?.concurrencyExceeded) {
-        setRateLimited(true);
-        setTimeout(() => setRateLimited(false), 2000);
+      if (result?.error) {
+        if (result.error === 'Cluster is disabled') {
+          setWarning({
+            title: 'Cluster Disabled',
+            description: `This cluster is currently disabled. Enable it from the cluster settings to run roles.`,
+          });
+        } else if (result.error === 'Max concurrency reached') {
+          setWarning({
+            title: 'Max Concurrency Reached',
+            description: `${roleName} is already running at its maximum of ${max} concurrent container${max === 1 ? '' : 's'}. Wait for a container to finish or stop one first.`,
+          });
+        } else {
+          setWarning({ title: 'Error', description: result.error });
+        }
       }
     } catch {}
     setTriggering(false);
   };
 
-  let playIcon;
-  if (triggering) {
-    playIcon = (
-      <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-      </svg>
-    );
-  } else if (rateLimited) {
-    playIcon = (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 text-orange-500">
-        <path d="M6.25 4.75l5.5 3.25-5.5 3.25V4.75z" />
-      </svg>
-    );
-  } else {
-    playIcon = (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
-        <path d="M6.25 4.75l5.5 3.25-5.5 3.25V4.75z" />
-      </svg>
-    );
-  }
+  const playIcon = triggering ? (
+    <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
+      <path d="M6.25 4.75l5.5 3.25-5.5 3.25V4.75z" />
+    </svg>
+  );
 
   return (
-    <button
-      onClick={handleRun}
-      disabled={triggering}
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs transition-colors disabled:opacity-40 ${
-        running > 0
-          ? 'bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/30'
-          : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-      }`}
-    >
-      <span className="mr-2 pr-2 border-r border-current/20 inline-flex items-center">
-        {playIcon}
-      </span>
-      <span className="select-none">
-        {roleName} ({running}/{max})
-      </span>
-    </button>
+    <>
+      <button
+        onClick={handleRun}
+        disabled={triggering}
+        className={`inline-flex items-center rounded-full px-3 py-1 text-xs transition-colors disabled:opacity-40 ${
+          running > 0
+            ? 'bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/30'
+            : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+        }`}
+      >
+        <span className="mr-2 pr-2 border-r border-current/20 inline-flex items-center">
+          {playIcon}
+        </span>
+        <span className="select-none">
+          {roleName} ({running}/{max})
+        </span>
+      </button>
+      <ConfirmDialog
+        open={!!warning}
+        onCancel={() => setWarning(null)}
+        onConfirm={() => setWarning(null)}
+        title={warning?.title}
+        description={warning?.description}
+        confirmLabel="OK"
+        variant="default"
+      />
+    </>
   );
 }
 

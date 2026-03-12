@@ -223,75 +223,76 @@ function ActiveConfig({ settings, onSave }) {
   };
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-4">
-      <div>
-        <label className="text-sm font-medium mb-1.5 block">Provider</label>
-        <select
-          value={provider}
-          onChange={(e) => handleProviderChange(e.target.value)}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
-        >
-          {availableProviders.map((p) => (
-            <option key={p.slug} value={p.slug}>{p.name}</option>
-          ))}
-          {availableProviders.length === 0 && (
-            <option value="" disabled>No providers configured</option>
-          )}
-        </select>
-      </div>
-
-      <div>
-        <label className="text-sm font-medium mb-1.5 block">Model</label>
-        {selectedBuiltin ? (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="divide-y divide-border">
+        <div className="flex items-center justify-between py-3 first:pt-0">
+          <label className="text-sm font-medium shrink-0">Provider</label>
           <select
-            value={model}
-            onChange={(e) => handleModelChange(e.target.value)}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            value={provider}
+            onChange={(e) => handleProviderChange(e.target.value)}
+            className="w-48 rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
           >
-            {selectedBuiltin.models.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
+            {availableProviders.map((p) => (
+              <option key={p.slug} value={p.slug}>{p.name}</option>
             ))}
+            {availableProviders.length === 0 && (
+              <option value="" disabled>No providers configured</option>
+            )}
           </select>
-        ) : (
+        </div>
+
+        <div className="flex items-center justify-between py-3">
+          <label className="text-sm font-medium shrink-0">Model</label>
+          {selectedBuiltin ? (
+            <select
+              value={model}
+              onChange={(e) => handleModelChange(e.target.value)}
+              className="w-48 rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            >
+              {selectedBuiltin.models.map((m) => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={model}
+              onChange={(e) => handleModelChange(e.target.value)}
+              placeholder="Model name"
+              className="w-48 rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            />
+          )}
+        </div>
+
+        <div className="flex items-center justify-between py-3">
+          <label className="text-sm font-medium shrink-0">Max Tokens</label>
           <input
-            type="text"
-            value={model}
-            onChange={(e) => handleModelChange(e.target.value)}
-            placeholder="Model name"
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            type="number"
+            value={maxTokens}
+            onChange={(e) => handleMaxTokensChange(e.target.value)}
+            className="w-48 rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
           />
-        )}
-      </div>
+        </div>
 
-      <div>
-        <label className="text-sm font-medium mb-1.5 block">Max Tokens</label>
-        <input
-          type="number"
-          value={maxTokens}
-          onChange={(e) => handleMaxTokensChange(e.target.value)}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
-        />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium">Web Search</label>
-        <button
-          onClick={handleWebSearchToggle}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            webSearch === 'true' ? 'bg-foreground' : 'bg-border'
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-              webSearch === 'true' ? 'translate-x-6' : 'translate-x-1'
-            }`}
-          />
-        </button>
-      </div>
-
-      <div className="flex justify-end">
-        {saving && <span className="text-xs text-muted-foreground">Saving...</span>}
-        {saved && <span className="text-xs text-green-600 dark:text-green-400 inline-flex items-center gap-1"><CheckIcon size={12} /> Saved</span>}
+        <div className="flex items-center justify-between py-3 last:pb-0">
+          <label className="text-sm font-medium shrink-0">Web Search</label>
+          <div className="flex items-center gap-3">
+            {saving && <span className="text-xs text-muted-foreground">Saving...</span>}
+            {saved && <span className="text-xs text-green-600 dark:text-green-400 inline-flex items-center gap-1"><CheckIcon size={12} /> Saved</span>}
+            <button
+              onClick={handleWebSearchToggle}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                webSearch === 'true' ? 'bg-foreground' : 'bg-border'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                  webSearch === 'true' ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -435,20 +436,45 @@ function ProviderCard({ name, credentials, credentialStatuses, onUpdateCredentia
     setSaving(null);
   };
 
+  const apiKeys = credentials.filter((c) => !c.key.toLowerCase().includes('oauth'));
+  const oauthKeys = credentials.filter((c) => c.key.toLowerCase().includes('oauth'));
+
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <h3 className="text-sm font-medium mb-1">{name}</h3>
-      <div className="divide-y divide-border">
-        {credentials.map((cred) => (
-          <SecretRow
-            key={cred.key}
-            label={cred.label}
-            description={cred.description}
-            isSet={statusMap.get(cred.key) || false}
-            saving={saving === cred.key}
-            onSave={(value) => handleSave(cred.key, value)}
-          />
-        ))}
+    <div>
+      <h3 className="text-sm font-medium mb-2">{name}</h3>
+      <div className="space-y-2">
+        {apiKeys.length > 0 && (
+          <div className="rounded-lg border bg-card p-4">
+            <div className="divide-y divide-border">
+              {apiKeys.map((cred) => (
+                <SecretRow
+                  key={cred.key}
+                  label={cred.label}
+                  description={cred.description}
+                  isSet={statusMap.get(cred.key) || false}
+                  saving={saving === cred.key}
+                  onSave={(value) => handleSave(cred.key, value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        {oauthKeys.length > 0 && (
+          <div className="rounded-lg border bg-card p-4">
+            <div className="divide-y divide-border">
+              {oauthKeys.map((cred) => (
+                <SecretRow
+                  key={cred.key}
+                  label={cred.label}
+                  description={cred.description}
+                  isSet={statusMap.get(cred.key) || false}
+                  saving={saving === cred.key}
+                  onSave={(value) => handleSave(cred.key, value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -467,44 +493,53 @@ function CustomProviderCard({ provider, onEdit, onRemove }) {
   };
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className="text-sm font-medium">{provider.name}</h3>
-          <p className="text-xs text-muted-foreground font-mono">{provider.baseUrl}</p>
-        </div>
-        <button
-          onClick={() => onEdit(provider)}
-          className="rounded-md px-2 py-1 text-xs font-medium border border-border text-muted-foreground hover:text-foreground"
-        >
-          Edit
-        </button>
-      </div>
-      <div className="flex items-center justify-between py-2 text-sm">
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-medium">{provider.name}</h3>
         <div className="flex items-center gap-2">
-          <KeyIcon size={14} className="text-muted-foreground" />
-          <span>API Key</span>
+          <button
+            onClick={() => onEdit(provider)}
+            className="rounded-md px-2.5 py-1.5 text-xs font-medium border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            Edit
+          </button>
+          <button
+            onClick={handleRemove}
+            className={`rounded-md px-2.5 py-1.5 text-xs font-medium border ${
+              confirmRemove
+                ? 'border-destructive text-destructive hover:bg-destructive/10'
+                : 'border-border text-muted-foreground hover:text-destructive hover:border-destructive/50'
+            }`}
+          >
+            <span className="inline-flex items-center gap-1">
+              <TrashIcon size={12} />
+              {confirmRemove ? 'Confirm' : 'Remove'}
+            </span>
+          </button>
         </div>
-        <StatusBadge isSet={provider.hasApiKey} />
       </div>
-      <div className="flex items-center justify-between py-2 text-sm">
-        <span className="text-muted-foreground">Model</span>
-        <code className="text-xs font-mono">{provider.model}</code>
-      </div>
-      <div className="flex justify-end mt-2">
-        <button
-          onClick={handleRemove}
-          className={`rounded-md px-2.5 py-1.5 text-xs font-medium border ${
-            confirmRemove
-              ? 'border-destructive text-destructive hover:bg-destructive/10'
-              : 'border-border text-muted-foreground hover:text-destructive hover:border-destructive/50'
-          }`}
-        >
-          <span className="inline-flex items-center gap-1">
-            <TrashIcon size={12} />
-            {confirmRemove ? 'Confirm' : 'Remove'}
-          </span>
-        </button>
+      <div className="rounded-lg border bg-card p-4">
+        <div className="divide-y divide-border">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3">
+            <div className="flex items-center gap-2">
+              <KeyIcon size={14} className="text-muted-foreground shrink-0" />
+              <span className="text-sm font-medium">API Key</span>
+            </div>
+            <StatusBadge isSet={provider.hasApiKey} />
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Model</span>
+            </div>
+            <code className="text-xs font-mono text-muted-foreground">{provider.model}</code>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Base URL</span>
+            </div>
+            <code className="text-xs font-mono text-muted-foreground">{provider.baseUrl}</code>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -583,6 +618,134 @@ function CustomProviderDialog({ open, initial, onSave, onCancel }) {
             {saving ? 'Saving...' : initial ? 'Save' : 'Add'}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Combined LLM page — Default Provider + Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function ChatLlmPage() {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingProvider, setEditingProvider] = useState(null);
+
+  const loadSettings = async () => {
+    try {
+      const result = await getChatSettings();
+      setSettings(result);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  // Default Provider handlers
+  const handleSaveActive = async (provider, model, maxTokens, webSearch) => {
+    const result = await setActiveLlm(provider, model, maxTokens, webSearch);
+    if (result?.success) await loadSettings();
+    return result;
+  };
+
+  // Providers handlers
+  const handleUpdateCredential = async (credKey, value) => {
+    await updateProviderCredential(credKey, value);
+    await loadSettings();
+  };
+
+  const handleAddCustom = async (config) => {
+    await addCustomProvider(config);
+    setShowDialog(false);
+    await loadSettings();
+  };
+
+  const handleEditCustom = async (config) => {
+    if (editingProvider) {
+      await updateCustomProvider(editingProvider.key, config);
+      setEditingProvider(null);
+      setShowDialog(false);
+      await loadSettings();
+    }
+  };
+
+  const handleRemoveCustom = async (key) => {
+    await removeCustomProvider(key);
+    await loadSettings();
+  };
+
+  const openAdd = () => { setEditingProvider(null); setShowDialog(true); };
+  const openEdit = (provider) => { setEditingProvider(provider); setShowDialog(true); };
+  const closeDialog = () => { setShowDialog(false); setEditingProvider(null); };
+
+  if (loading) {
+    return <div className="h-64 animate-pulse rounded-md bg-border/50" />;
+  }
+
+  if (settings?.error) {
+    return <p className="text-sm text-destructive">{settings.error}</p>;
+  }
+
+  return (
+    <div className="space-y-10">
+      {/* Default Provider section */}
+      <div>
+        <div className="mb-4">
+          <h2 className="text-base font-medium">Default Provider</h2>
+          <p className="text-sm text-muted-foreground">Select the LLM provider and model for chat. Only providers with configured API keys appear in the dropdown.</p>
+        </div>
+        <ActiveConfig settings={settings} onSave={handleSaveActive} />
+      </div>
+
+      {/* Providers section */}
+      <div>
+        <div className="mb-4">
+          <h2 className="text-base font-medium">Providers</h2>
+          <p className="text-sm text-muted-foreground">Configure API keys and credentials for each LLM provider.</p>
+        </div>
+
+        {settings?.builtinProviders && (
+          <div className="space-y-3 mb-6">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Built-in</h4>
+            {Object.entries(settings.builtinProviders).map(([slug, prov]) => (
+              <ProviderCard
+                key={slug}
+                name={prov.name}
+                credentials={prov.credentials}
+                credentialStatuses={settings.credentialStatuses || []}
+                onUpdateCredential={handleUpdateCredential}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Custom</h4>
+          {settings?.customProviders?.map((cp) => (
+            <CustomProviderCard key={cp.key} provider={cp} onEdit={openEdit} onRemove={handleRemoveCustom} />
+          ))}
+          <button
+            onClick={openAdd}
+            className="w-full rounded-lg border border-dashed p-4 text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex items-center justify-center gap-2"
+          >
+            <PlusIcon size={14} />
+            Add Custom Provider
+          </button>
+        </div>
+
+        <CustomProviderDialog
+          open={showDialog}
+          initial={editingProvider}
+          onSave={editingProvider ? handleEditCustom : handleAddCustom}
+          onCancel={closeDialog}
+        />
       </div>
     </div>
   );

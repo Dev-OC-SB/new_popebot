@@ -29,7 +29,7 @@ function getStorageKey(id) {
 
 function saveTabOrder(id, tabs) {
   try {
-    const ids = tabs.filter((t) => t.id !== 'claude-code').map((t) => t.id);
+    const ids = tabs.filter((t) => t.id !== PRIMARY_TAB_ID).map((t) => t.id);
     if (ids.length > 0) {
       localStorage.setItem(getStorageKey(id), JSON.stringify(ids));
     } else {
@@ -60,6 +60,8 @@ function reorderByStored(tabs, storedOrder) {
   return [primary, ...dynamic];
 }
 
+const PRIMARY_TAB_ID = 'code-primary';
+
 export default function CodePage({ session, codeWorkspaceId }) {
   const [dialogState, setDialogState] = useState('closed'); // 'closed' | 'loading' | 'safe' | 'warning' | 'error'
   const [gitStatus, setGitStatus] = useState(null);
@@ -67,9 +69,9 @@ export default function CodePage({ session, codeWorkspaceId }) {
   const [errorMessage, setErrorMessage] = useState('');
 
   const [tabs, setTabs] = useState([
-    { id: 'claude-code', label: 'Code', type: 'claude' },
+    { id: PRIMARY_TAB_ID, label: 'Code', type: 'code', primary: true },
   ]);
-  const [activeTabId, setActiveTabId] = useState('claude-code');
+  const [activeTabId, setActiveTabId] = useState(PRIMARY_TAB_ID);
   const [creatingShell, setCreatingShell] = useState(false);
   const [creatingCode, setCreatingCode] = useState(false);
   const [closingTabId, setClosingTabId] = useState(null);
@@ -84,7 +86,7 @@ export default function CodePage({ session, codeWorkspaceId }) {
     listTerminalSessions(codeWorkspaceId).then((result) => {
       if (result?.success && result.sessions?.length > 0) {
         const restored = [
-          { id: 'claude-code', label: 'Code', type: 'claude' },
+          { id: PRIMARY_TAB_ID, label: 'Code', type: 'code', primary: true },
           ...result.sessions.map((s) => ({ id: s.id, label: s.label, type: s.type || 'shell' })),
         ];
         const storedOrder = loadTabOrder(codeWorkspaceId);
@@ -103,9 +105,9 @@ export default function CodePage({ session, codeWorkspaceId }) {
   const handleNewCode = useCallback(async () => {
     setCreatingCode(true);
     try {
-      const result = await createTerminalSession(codeWorkspaceId, 'claude');
+      const result = await createTerminalSession(codeWorkspaceId, 'code');
       if (result?.success) {
-        const newTab = { id: result.sessionId, label: result.label, type: 'claude' };
+        const newTab = { id: result.sessionId, label: result.label, type: 'code' };
         setTabs((prev) => [...prev, newTab]);
         setActiveTabId(result.sessionId);
       }
@@ -139,7 +141,7 @@ export default function CodePage({ session, codeWorkspaceId }) {
       // Best effort
     }
     setTabs((prev) => prev.filter((t) => t.id !== tabId));
-    setActiveTabId((prev) => (prev === tabId ? 'claude-code' : prev));
+    setActiveTabId((prev) => (prev === tabId ? PRIMARY_TAB_ID : prev));
   }, [codeWorkspaceId]);
 
   const handleOpenCloseDialog = useCallback(async () => {
@@ -219,8 +221,8 @@ export default function CodePage({ session, codeWorkspaceId }) {
 
   // Look up closing tab type for the confirm dialog description
   const closingTab = closingTabId ? tabs.find((t) => t.id === closingTabId) : null;
-  const closingTabDescription = closingTab?.type === 'claude'
-    ? 'This will end the Claude Code session.'
+  const closingTabDescription = closingTab?.type === 'code'
+    ? 'This will end the code session.'
     : 'This will end the shell session.';
 
   const dynamicTabIds = tabs.slice(1).map((t) => t.id);
@@ -238,8 +240,8 @@ export default function CodePage({ session, codeWorkspaceId }) {
               {/* Primary Code tab — pinned, not draggable */}
               <PinnedTab
                 tab={tabs[0]}
-                isActive={activeTabId === 'claude-code'}
-                onClick={() => setActiveTabId('claude-code')}
+                isActive={activeTabId === PRIMARY_TAB_ID}
+                onClick={() => setActiveTabId(PRIMARY_TAB_ID)}
                 onClose={() => handleOpenCloseDialog()}
                 closeTitle="Close session"
               />
@@ -274,16 +276,17 @@ export default function CodePage({ session, codeWorkspaceId }) {
               )}
 
               {/* + buttons */}
+              <div className="w-3 shrink-0 self-stretch" />
               <button
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium font-mono text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-default"
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium font-mono text-muted-foreground hover:text-foreground border border-dashed border-muted-foreground/25 hover:border-muted-foreground/40 rounded-md transition-colors self-center disabled:opacity-50 disabled:cursor-default"
                 onClick={handleNewCode}
                 disabled={creatingCode}
-                title="New Claude Code tab"
+                title="New code tab"
               >
                 + Code
               </button>
               <button
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium font-mono text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-default"
+                className="ml-1 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium font-mono text-muted-foreground hover:text-foreground border border-dashed border-muted-foreground/25 hover:border-muted-foreground/40 rounded-md transition-colors self-center disabled:opacity-50 disabled:cursor-default"
                 onClick={handleNewShell}
                 disabled={creatingShell}
                 title="New shell terminal"
@@ -305,13 +308,13 @@ export default function CodePage({ session, codeWorkspaceId }) {
               >
                 <TerminalView
                   codeWorkspaceId={codeWorkspaceId}
-                  wsPath={tab.id === 'claude-code'
+                  wsPath={tab.primary
                     ? `/code/${codeWorkspaceId}/ws`
                     : `/code/${codeWorkspaceId}/term/${tab.id}/ws`}
                   isActive={activeTabId === tab.id}
-                  showToolbar={tab.type === 'claude'}
-                  ensureContainer={tab.id === 'claude-code' ? ensureCodeWorkspaceContainer : undefined}
-                  onCloseSession={tab.id === 'claude-code' ? handleOpenCloseDialog : undefined}
+                  showToolbar={tab.primary === true}
+                  ensureContainer={tab.primary ? ensureCodeWorkspaceContainer : undefined}
+                  onCloseSession={tab.primary ? handleOpenCloseDialog : undefined}
                 />
               </div>
             ))}
@@ -390,7 +393,7 @@ function PinnedTab({ tab, isActive, onClick, onClose, closeTitle }) {
       )}
       onClick={onClick}
     >
-      {tab.type === 'claude' ? <CodeIcon size={12} /> : <TerminalIcon size={12} />}
+      {tab.type === 'code' ? <CodeIcon size={12} /> : <TerminalIcon size={12} />}
       <span>{tab.label}</span>
       <button
         className="ml-1 rounded-sm p-0.5 hover:bg-destructive/20 hover:text-destructive transition-all"
@@ -430,7 +433,7 @@ function SortableTab({ tab, isActive, onClick, onClose }) {
       )}
       onClick={onClick}
     >
-      {tab.type === 'claude' ? <CodeIcon size={12} /> : <TerminalIcon size={12} />}
+      {tab.type === 'code' ? <CodeIcon size={12} /> : <TerminalIcon size={12} />}
       <span>{tab.label}</span>
       <button
         className="ml-1 rounded-sm p-0.5 hover:bg-destructive/20 hover:text-destructive transition-all"
@@ -438,7 +441,7 @@ function SortableTab({ tab, isActive, onClick, onClose }) {
           e.stopPropagation();
           onClose();
         }}
-        title={tab.type === 'claude' ? 'Close code tab' : 'Close shell'}
+        title={tab.type === 'code' ? 'Close code tab' : 'Close shell'}
       >
         <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <line x1="4" y1="4" x2="12" y2="12" />

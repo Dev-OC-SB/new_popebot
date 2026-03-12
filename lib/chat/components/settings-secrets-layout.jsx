@@ -45,22 +45,21 @@ export function SubTabLayout({ tabs, children }) {
 
 const API_KEYS_TABS = [
   { id: 'keys', label: 'Keys', href: '/settings/api-keys/keys' },
-  { id: 'github', label: 'GitHub', href: '/settings/api-keys/github' },
-  { id: 'telegram', label: 'Telegram', href: '/settings/api-keys/telegram' },
 ];
 
 const CHAT_TABS = [
-  { id: 'configuration', label: 'Configuration', href: '/settings/chat/configuration' },
-  { id: 'providers', label: 'Providers', href: '/settings/chat/providers' },
+  { id: 'llm', label: 'LLM', href: '/settings/chat/llm' },
+  { id: 'telegram', label: 'Telegram', href: '/settings/chat/telegram' },
 ];
 
 const GITHUB_TABS = [
+  { id: 'tokens', label: 'Tokens', href: '/settings/github/tokens' },
   { id: 'secrets', label: 'Secrets', href: '/settings/github/secrets' },
   { id: 'variables', label: 'Variables', href: '/settings/github/variables' },
 ];
 
 export function ApiKeysLayout({ children }) {
-  return <SubTabLayout tabs={API_KEYS_TABS}>{children}</SubTabLayout>;
+  return <div>{children}</div>;
 }
 
 export function ChatSettingsLayout({ children }) {
