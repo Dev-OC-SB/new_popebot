@@ -8,6 +8,7 @@ import { createNotification } from '../lib/db/notifications.js';
 import { loadTriggers } from '../lib/triggers.js';
 import { verifyApiKey } from '../lib/db/api-keys.js';
 import { getConfig } from '../lib/config.js';
+import { handleHealth } from '../lib/healthcheck/api.js';
 
 // Bot token — resolved from DB/env, can be overridden by /telegram/register
 let telegramBotToken = null;
@@ -31,7 +32,7 @@ function getFireTriggers() {
 }
 
 // Routes that have their own authentication
-const PUBLIC_ROUTES = ['/telegram/webhook', '/github/webhook', '/ping'];
+const PUBLIC_ROUTES = ['/telegram/webhook', '/github/webhook', '/ping', '/health'];
 
 /**
  * Timing-safe string comparison.
@@ -265,6 +266,7 @@ async function GET(request) {
 
   switch (routePath) {
     case '/ping':           return Response.json({ message: 'Pong!' });
+    case '/health':         return handleHealth(request);
     case '/jobs/status':    return handleJobStatus(request);
     default:                return Response.json({ error: 'Not found' }, { status: 404 });
   }
