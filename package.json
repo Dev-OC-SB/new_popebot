@@ -27,6 +27,8 @@
     "./cluster/stream": "./lib/cluster/stream.js",
     "./auth/components": "./lib/auth/components/index.js",
     "./middleware": "./lib/auth/middleware.js",
+    "./healthcheck": "./lib/healthcheck/index.js",
+    "./healthcheck/api": "./lib/healthcheck/api.js",
     "./package.json": "./package.json"
   },
   "files": [
