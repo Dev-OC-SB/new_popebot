@@ -50,6 +50,21 @@ const IMAGES = [
     dockerfile: 'templates/docker/claude-code-cluster-worker/Dockerfile',
   },
   {
+    name: 'pi-coding-agent-headless',
+    context: 'templates/docker/pi-coding-agent-headless',
+    dockerfile: 'templates/docker/pi-coding-agent-headless/Dockerfile',
+  },
+  {
+    name: 'pi-coding-agent-workspace',
+    context: 'templates/docker/pi-coding-agent-workspace',
+    dockerfile: 'templates/docker/pi-coding-agent-workspace/Dockerfile',
+  },
+  {
+    name: 'pi-coding-agent-cluster-worker',
+    context: 'templates/docker/pi-coding-agent-cluster-worker',
+    dockerfile: 'templates/docker/pi-coding-agent-cluster-worker/Dockerfile',
+  },
+  {
     name: 'event-handler',
     context: '.',
     dockerfile: 'templates/docker/event-handler/Dockerfile',

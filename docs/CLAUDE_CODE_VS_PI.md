@@ -1,26 +1,26 @@
 # Claude Code CLI vs Pi Coding Agent
 
-thepopebot supports two agent backends for running jobs. Choose the one that fits your setup.
+thepopebot supports two agent backends for running jobs. Pi is the default and supports all providers including OpenRouter. Claude Code CLI is available for users with Anthropic subscriptions.
 
-|  | Pi Coding Agent | Claude Code CLI |
+|  | Pi Coding Agent (default) | Claude Code CLI |
 |---|---|---|
 | **What** | Third-party coding agent (@mariozechner) | Anthropic's official coding agent |
-| **LLM providers** | Anthropic, OpenAI, Google, custom/local | Anthropic only (Claude models) |
+| **LLM providers** | Anthropic, OpenAI, Google, OpenRouter, custom/local | Anthropic only (Claude models) |
 | **Tools** | Custom skills (brave-search, browser-tools, etc.) | Built-in (Read, Edit, Bash, Glob, Grep, WebSearch, WebFetch) + MCP |
 | **Auth** | API key (pay-per-token) | OAuth token (subscription) or API key |
-| **Billing** | API credits | Pro/Max subscription (shared with Claude.ai) or API credits |
-| **Choose when** | Non-Anthropic LLMs, custom Pi skills | Subscription billing, official Anthropic tooling |
+| **Billing** | API credits (or OpenRouter credits) | Pro/Max subscription (shared with Claude.ai) or API credits |
+| **Choose when** | OpenRouter, non-Anthropic LLMs, custom Pi skills | Subscription billing, official Anthropic tooling |
 
 ## Switching backends
 
 Run `thepopebot setup` to reconfigure, or set the `AGENT_BACKEND` GitHub variable directly:
 
 ```bash
-# Switch to Claude Code
-npx thepopebot set-var AGENT_BACKEND claude-code
-
-# Switch to Pi
+# Switch to Pi (default — supports OpenRouter and all providers)
 npx thepopebot set-var AGENT_BACKEND pi
+
+# Switch to Claude Code (requires Anthropic subscription or API key)
+npx thepopebot set-var AGENT_BACKEND claude-code
 ```
 
 ## OAuth token setup
