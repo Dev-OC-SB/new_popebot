@@ -9,6 +9,8 @@ import {
   getApiKeySettings,
   updateApiKeySetting,
   regenerateWebhookSecret,
+  getGitHubRepoConfig,
+  updateGitHubRepoConfig,
 } from '../actions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -336,6 +338,188 @@ function TokenSecretRow({ label, isSet, onSave, onRegenerate, saving }) {
   );
 }
 
+function RepoConfigSection() {
+  const [repoConfig, setRepoConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [securityToken, setSecurityToken] = useState('');
+  const [owner, setOwner] = useState('');
+  const [repo, setRepo] = useState('');
+  const [ghToken, setGhToken] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  const loadConfig = async () => {
+    try {
+      const result = await getGitHubRepoConfig();
+      setRepoConfig(result);
+      if (result && !result.error) {
+        setOwner(result.owner || '');
+        setRepo(result.repo || '');
+      }
+    } catch {
+      setRepoConfig({ error: 'Failed to load' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    const result = await updateGitHubRepoConfig(securityToken, owner, repo, ghToken || undefined);
+    setSaving(false);
+    if (result?.success) {
+      setEditing(false);
+      setSecurityToken('');
+      setGhToken('');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      await loadConfig();
+    } else {
+      setError(result?.error || 'Failed to update');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    setError(null);
+    setSecurityToken('');
+    setGhToken('');
+    setOwner(repoConfig?.owner || '');
+    setRepo(repoConfig?.repo || '');
+  };
+
+  if (loading) {
+    return <div className="h-24 animate-pulse rounded-md bg-border/50" />;
+  }
+
+  if (!repoConfig?.securityTokenConfigured) {
+    return (
+      <div>
+        <div className="mb-4">
+          <h2 className="text-base font-medium">Repository</h2>
+          <p className="text-sm text-muted-foreground">Configure which GitHub repository the agent operates on.</p>
+        </div>
+        <div className="rounded-lg border border-dashed p-6 text-center">
+          <p className="text-sm text-muted-foreground mb-2">Repository management is locked.</p>
+          <p className="text-xs text-muted-foreground">
+            To enable, add <code className="rounded bg-muted px-1 py-0.5 font-mono text-foreground">ADMIN_SECURITY_TOKEN=your-secret</code> to your <code className="rounded bg-muted px-1 py-0.5 font-mono text-foreground">.env</code> file and restart the server.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const hasRepo = repoConfig?.owner && repoConfig?.repo;
+
+  return (
+    <div>
+      <div className="mb-4">
+        <h2 className="text-base font-medium">Repository</h2>
+        <p className="text-sm text-muted-foreground">Configure which GitHub repository the agent operates on.</p>
+      </div>
+      <div className="rounded-lg border bg-card p-4">
+        {!editing ? (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-1">
+            <div>
+              {hasRepo ? (
+                <>
+                  <span className="text-sm font-medium font-mono">{repoConfig.owner}/{repoConfig.repo}</span>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className={`inline-flex items-center gap-1.5 text-xs ${repoConfig.isTokenSet ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${repoConfig.isTokenSet ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
+                      PAT {repoConfig.isTokenSet ? 'configured' : 'not set'}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <span className="text-sm text-muted-foreground">No repository configured</span>
+              )}
+            </div>
+            <button
+              onClick={() => setEditing(true)}
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium border shrink-0 self-start sm:self-auto ${
+                saved ? 'border-green-500 text-green-600' : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
+            >
+              {saved ? 'Saved!' : hasRepo ? 'Change' : 'Configure'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {error && <p className="text-xs text-destructive">{error}</p>}
+            <div>
+              <label className="text-xs font-medium mb-1.5 block">Security Token</label>
+              <input
+                type="password"
+                value={securityToken}
+                onChange={(e) => setSecurityToken(e.target.value)}
+                placeholder="Enter your admin security token..."
+                autoFocus
+                className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Required to authorize changes. This is the ADMIN_SECURITY_TOKEN from your .env file.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Owner</label>
+                <input
+                  type="text"
+                  value={owner}
+                  onChange={(e) => setOwner(e.target.value.trim())}
+                  placeholder="e.g. octocat"
+                  className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Repository</label>
+                <input
+                  type="text"
+                  value={repo}
+                  onChange={(e) => setRepo(e.target.value.trim())}
+                  placeholder="e.g. my-project"
+                  className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1.5 block">Personal Access Token <span className="text-muted-foreground font-normal">(optional — leave blank to keep current)</span></label>
+              <input
+                type="password"
+                value={ghToken}
+                onChange={(e) => setGhToken(e.target.value)}
+                placeholder="ghp_..."
+                className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-foreground"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSave}
+                disabled={!securityToken || !owner || !repo || saving}
+                className="rounded-md px-3 py-1.5 text-xs font-medium bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleCancel}
+                className="rounded-md px-3 py-1.5 text-xs font-medium border border-border text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function GitHubTokensPage() {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -378,6 +562,9 @@ export function GitHubTokensPage() {
 
   return (
     <div className="space-y-6">
+      {/* Repository config (security-token gated) */}
+      <RepoConfigSection />
+
       {/* Personal Access Token */}
       <div>
         <div className="mb-4">

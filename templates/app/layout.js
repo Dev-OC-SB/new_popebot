@@ -15,8 +15,8 @@ export const viewport = {
 };
 
 const features = {
-  codeWorkspace: !!process.env.CLAUDE_CODE_OAUTH_TOKEN,
-  clusterWorkspace: !!process.env.CLAUDE_CODE_OAUTH_TOKEN,
+  codeWorkspace: true,
+  clusterWorkspace: true,
 };
 
 export default function RootLayout({ children }) {

@@ -45,4 +45,17 @@ export const PROVIDERS = {
       { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
     ],
   },
+  openrouter: {
+    label: 'OpenRouter',
+    name: 'OpenRouter',
+    envKey: 'OPENROUTER_API_KEY',
+    keyPage: 'https://openrouter.ai/settings/keys',
+    builtin: false,
+    baseUrl: 'https://openrouter.ai/api/v1',
+    api: 'openai-completions',
+    models: [
+      { id: 'minimax/minimax-m2.5', name: 'MiniMax M2.5', default: true },
+      { id: 'moonshotai/kimi-k2.5', name: 'Kimi K2.5' },
+    ],
+  },
 };

@@ -21,7 +21,8 @@ const ROOT = path.resolve(__dirname, '..');
 
 const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 const VERSION = pkg.version;
-const REPO = 'stephengpope/thepopebot';
+const repoArg = process.argv.find((_, i, a) => a[i - 1] === '--repo');
+const REPO = repoArg || 'stephengpope/thepopebot';
 
 const IMAGES = [
   {
@@ -48,6 +49,21 @@ const IMAGES = [
     name: 'claude-code-cluster-worker',
     context: 'templates/docker/claude-code-cluster-worker',
     dockerfile: 'templates/docker/claude-code-cluster-worker/Dockerfile',
+  },
+  {
+    name: 'pi-coding-agent-headless',
+    context: 'templates/docker/pi-coding-agent-headless',
+    dockerfile: 'templates/docker/pi-coding-agent-headless/Dockerfile',
+  },
+  {
+    name: 'pi-coding-agent-workspace',
+    context: 'templates/docker/pi-coding-agent-workspace',
+    dockerfile: 'templates/docker/pi-coding-agent-workspace/Dockerfile',
+  },
+  {
+    name: 'pi-coding-agent-cluster-worker',
+    context: 'templates/docker/pi-coding-agent-cluster-worker',
+    dockerfile: 'templates/docker/pi-coding-agent-cluster-worker/Dockerfile',
   },
   {
     name: 'event-handler',

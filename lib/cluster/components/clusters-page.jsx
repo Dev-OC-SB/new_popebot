@@ -173,14 +173,17 @@ function ClusterRow({ cluster, onDelete }) {
           </span>
         </div>
         <div className="shrink-0 flex items-center gap-1">
-          <a
-            href={`/cluster/${cluster.id}`}
+          <button
             className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted"
             aria-label="Edit cluster"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/cluster/${cluster.id}`;
+            }}
           >
             <PencilIcon size={16} />
-          </a>
+          </button>
           <button
             className="rounded-md p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted"
             aria-label="Delete"

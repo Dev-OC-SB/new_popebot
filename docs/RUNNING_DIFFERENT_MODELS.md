@@ -17,12 +17,13 @@ Set these in your `.env` file:
 
 | Variable | Description |
 |----------|-------------|
-| `LLM_PROVIDER` | `anthropic` (default), `openai`, `google`, or `custom` |
+| `LLM_PROVIDER` | `anthropic` (default), `openai`, `google`, `openrouter`, or `custom` |
 | `LLM_MODEL` | Model name (e.g. `claude-sonnet-4-20250514`, `gpt-4o`) — uses provider default if unset |
 | `LLM_MAX_TOKENS` | Max tokens for responses (default: `4096`) |
 | `ANTHROPIC_API_KEY` | Required for `anthropic` provider |
 | `OPENAI_API_KEY` | Required for `openai` provider |
 | `GOOGLE_API_KEY` | Required for `google` provider |
+| `OPENROUTER_API_KEY` | Required for `openrouter` provider |
 | `CUSTOM_API_KEY` | Required for `custom` provider (if the endpoint needs auth) |
 | `OPENAI_BASE_URL` | Custom OpenAI-compatible base URL (for `custom` provider, e.g. `http://localhost:11434/v1`) |
 
@@ -104,7 +105,30 @@ The matching API key must already exist as a GitHub secret (see the Providers ta
 | `anthropic` | Anthropic (default) | `claude-sonnet-4-20250514` | `AGENT_ANTHROPIC_API_KEY` |
 | `openai` | OpenAI | `gpt-4o` | `AGENT_OPENAI_API_KEY` |
 | `google` | Google Gemini | `gemini-2.5-pro` | `AGENT_GOOGLE_API_KEY` |
+| `openrouter` | OpenRouter (access 200+ models via one API key) | `minimax/minimax-m2.5` | `AGENT_OPENROUTER_API_KEY` |
 | `custom` | Any OpenAI-compatible API (DeepSeek, Ollama, Together AI, etc.) | `deepseek-chat` | `AGENT_CUSTOM_API_KEY` *(if required — see below)* |
+
+## Using the `openrouter` Provider
+
+OpenRouter gives you access to 200+ models from multiple providers through a single API key. Get your key at [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys).
+
+**Event Handler** (`.env`):
+
+```bash
+LLM_PROVIDER=openrouter
+LLM_MODEL=minimax/minimax-m2.5
+OPENROUTER_API_KEY=sk-or-v1-...
+```
+
+**Jobs** (GitHub repo variables):
+
+```bash
+npx thepopebot set-var LLM_PROVIDER openrouter
+npx thepopebot set-var LLM_MODEL minimax/minimax-m2.5
+npx thepopebot set-agent-secret OPENROUTER_API_KEY sk-or-v1-...
+```
+
+OpenRouter model IDs use the `provider/model` format (e.g., `anthropic/claude-sonnet-4`, `openai/gpt-4o`, `google/gemini-2.5-pro`, `minimax/minimax-m2.5`, `moonshotai/kimi-k2.5`).
 
 ## Using the `custom` Provider
 

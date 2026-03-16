@@ -73,7 +73,10 @@ function getTemplateFiles(templatesDir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
+      if (entry.isSymbolicLink()) {
+        // Track symlinks separately — they'll be recreated, not copied
+        files.push(path.relative(templatesDir, fullPath));
+      } else if (entry.isDirectory()) {
         walk(fullPath);
       } else if (!EXCLUDED_FILENAMES.includes(entry.name)) {
         files.push(path.relative(templatesDir, fullPath));
@@ -162,6 +165,21 @@ async function init() {
     const src = path.join(templatesDir, relPath);
     const outPath = destPath(relPath);
     const dest = path.join(cwd, outPath);
+
+    // Handle symlinks — recreate rather than copy
+    const srcStat = fs.lstatSync(src);
+    if (srcStat.isSymbolicLink()) {
+      if (!fs.existsSync(dest)) {
+        const linkTarget = fs.readlinkSync(src);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.symlinkSync(linkTarget, dest);
+        created.push(outPath);
+        console.log(`  Created ${outPath} → ${linkTarget}`);
+      } else {
+        skipped.push(outPath);
+      }
+      continue;
+    }
 
     if (!fs.existsSync(dest)) {
       // File doesn't exist — create it
@@ -348,15 +366,19 @@ async function init() {
   if (!fs.existsSync(envPath)) {
     // Seed .env for new projects
     const authSecret = randomBytes(32).toString('base64');
+    const adminSecurityToken = randomBytes(32).toString('hex');
     const seedEnv = `# thepopebot Configuration
 # Run "npm run setup" to complete configuration
 
 AUTH_SECRET=${authSecret}
 AUTH_TRUST_HOST=true
 THEPOPEBOT_VERSION=${version}
+
+# Security token required to change GitHub repo config from the UI
+ADMIN_SECURITY_TOKEN=${adminSecurityToken}
 `;
     fs.writeFileSync(envPath, seedEnv);
-    console.log(`  Created .env (AUTH_SECRET, THEPOPEBOT_VERSION=${version})`);
+    console.log(`  Created .env (AUTH_SECRET, ADMIN_SECURITY_TOKEN, THEPOPEBOT_VERSION=${version})`);
   } else {
     // Update THEPOPEBOT_VERSION in existing .env
     try {

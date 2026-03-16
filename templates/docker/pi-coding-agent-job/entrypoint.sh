@@ -90,8 +90,24 @@ if [ -n "$LLM_MODEL" ]; then
     MODEL_FLAGS="$MODEL_FLAGS --model $LLM_MODEL"
 fi
 
+# Generate models.json for OpenRouter provider
+if [ "$LLM_PROVIDER" = "openrouter" ] && [ -n "$OPENROUTER_API_KEY" ]; then
+    LLM_MODEL="${LLM_MODEL:-minimax/minimax-m2.5}"
+    cat > /home/agent/.pi/agent/models.json <<MODELS
+{
+  "providers": {
+    "openrouter": {
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "api": "openai-completions",
+      "apiKey": "OPENROUTER_API_KEY",
+      "models": [{ "id": "$LLM_MODEL" }]
+    }
+  }
+}
+MODELS
+    MODEL_FLAGS="--provider openrouter --model $LLM_MODEL"
 # Generate models.json for custom provider (OpenAI-compatible endpoints like Ollama)
-if [ "$LLM_PROVIDER" = "custom" ] && [ -n "$OPENAI_BASE_URL" ]; then
+elif [ "$LLM_PROVIDER" = "custom" ] && [ -n "$OPENAI_BASE_URL" ]; then
     # If no API key was provided, set a dummy so Pi doesn't send empty auth
     if [ -z "$CUSTOM_API_KEY" ]; then
         export CUSTOM_API_KEY="not-needed"

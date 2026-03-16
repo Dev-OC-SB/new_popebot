@@ -35,7 +35,7 @@ Both the system prompt and role prompt support `{{PLACEHOLDER}}` template variab
 
 | Variable | Value |
 |----------|-------|
-| `{{CLUSTER_HOME}}` | Container workspace root (`/home/claude-code/workspace`) |
+| `{{CLUSTER_HOME}}` | Container workspace root (`/home/agent/workspace` for Pi, `/home/claude-code/workspace` for Claude Code) |
 | `{{CLUSTER_SHARED_DIR}}` | Path to cluster shared directory |
 | `{{CLUSTER_SHARED_FOLDERS}}` | JSON array of shared folder paths |
 | `{{SELF_ROLE_NAME}}` | This role's name |
@@ -179,7 +179,7 @@ Every container run creates a log session under `logs/` in the cluster data dire
 
 Each worker container receives two prompts:
 
-1. **System Prompt** (`--append-system-prompt`) — Composed from the cluster's system prompt plus the role's instructions, with all template variables resolved. This provides shared context about the cluster mission and the role's responsibilities.
+1. **System Prompt** — Composed from the cluster's system prompt plus the role's instructions, with all template variables resolved. This provides shared context about the cluster mission and the role's responsibilities. Delivery mechanism depends on the agent backend: Claude Code uses `--append-system-prompt`, Pi writes the prompt to `~/.pi/SYSTEM.md`.
 
 2. **User Prompt** (`-p`) — The role's `prompt` field (or a webhook-provided override). This is the actual task instruction.
 

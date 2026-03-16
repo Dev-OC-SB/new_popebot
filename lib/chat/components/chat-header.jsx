@@ -147,9 +147,9 @@ export function ChatHeader({ chatId: chatIdProp, workspaceId }) {
             </h1>
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <button className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground shrink-0">
+                <span className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground shrink-0">
                   <ChevronDownIcon size={14} />
-                </button>
+                </span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[150px]">
                 <DropdownMenuItem onClick={handleStar}>

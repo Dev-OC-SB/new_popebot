@@ -890,13 +890,13 @@ function CopyButton({ text, label }) {
 }
 
 const PLACEHOLDER_ROWS = [
-  { name: '{{CLUSTER_HOME}}', example: '/home/claude-code/workspace', desc: 'Root of the cluster workspace' },
-  { name: '{{CLUSTER_SHARED_DIR}}', example: '/home/claude-code/workspace/shared/', desc: 'Cluster shared directory' },
+  { name: '{{CLUSTER_HOME}}', example: '/home/agent/workspace', desc: 'Root of the cluster workspace' },
+  { name: '{{CLUSTER_SHARED_DIR}}', example: '/home/agent/workspace/shared/', desc: 'Cluster shared directory' },
   { name: '{{CLUSTER_SHARED_FOLDERS}}', example: '[".../shared/inbox/",".../shared/outbox/"]', desc: 'Cluster shared folders as absolute paths (JSON)' },
   { name: '{{SELF_ROLE_NAME}}', example: 'Tech Lead', desc: "Current role's name" },
   { name: '{{SELF_WORKER_ID}}', example: 'a1b2c3d4', desc: "This worker's unique ID" },
-  { name: '{{SELF_WORK_DIR}}', example: '/home/claude-code/workspace/role-db4d21c0/worker-a1b2c3d4/', desc: "Worker's private dir (where claude starts)" },
-  { name: '{{SELF_TMP_DIR}}', example: '/home/claude-code/workspace/role-db4d21c0/worker-a1b2c3d4/tmp/', desc: 'Scratch space' },
+  { name: '{{SELF_WORK_DIR}}', example: '/home/agent/workspace/role-db4d21c0/worker-a1b2c3d4/', desc: "Worker's private dir (where claude starts)" },
+  { name: '{{SELF_TMP_DIR}}', example: '/home/agent/workspace/role-db4d21c0/worker-a1b2c3d4/tmp/', desc: 'Scratch space' },
   { name: '{{DATETIME}}', example: '2026-03-07T20:00:01Z', desc: 'Current UTC timestamp' },
   { name: '{{WORKSPACE}}', example: '(full JSON manifest)', desc: 'Entire workspace manifest as JSON' },
   { name: '{{WEBHOOK_PAYLOAD}}', example: '{"issue_number": 42, ...}', desc: 'Webhook payload as formatted JSON (empty string if no payload)' },
@@ -904,15 +904,15 @@ const PLACEHOLDER_ROWS = [
 
 const WORKSPACE_EXAMPLE = `{
   "CLUSTER": {
-    "CLUSTER_HOME": "/home/claude-code/workspace",
-    "CLUSTER_SHARED_DIR": "/home/claude-code/workspace/shared/",
-    "CLUSTER_SHARED_FOLDERS": ["/home/claude-code/workspace/shared/inbox/", "/home/claude-code/workspace/shared/outbox/", "/home/claude-code/workspace/shared/testing/"]
+    "CLUSTER_HOME": "/home/agent/workspace",
+    "CLUSTER_SHARED_DIR": "/home/agent/workspace/shared/",
+    "CLUSTER_SHARED_FOLDERS": ["/home/agent/workspace/shared/inbox/", "/home/agent/workspace/shared/outbox/", "/home/agent/workspace/shared/testing/"]
   },
   "SELF": {
     "SELF_ROLE_NAME": "Tech Lead",
     "SELF_WORKER_ID": "a1b2c3d4",
-    "SELF_WORK_DIR": "/home/claude-code/workspace/role-db4d21c0/worker-a1b2c3d4/",
-    "SELF_TMP_DIR": "/home/claude-code/workspace/role-db4d21c0/worker-a1b2c3d4/tmp/"
+    "SELF_WORK_DIR": "/home/agent/workspace/role-db4d21c0/worker-a1b2c3d4/",
+    "SELF_TMP_DIR": "/home/agent/workspace/role-db4d21c0/worker-a1b2c3d4/tmp/"
   }
 }`;
 

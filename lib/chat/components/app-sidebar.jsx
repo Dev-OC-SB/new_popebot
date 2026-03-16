@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CirclePlusIcon, PanelLeftIcon, MessageIcon, ClusterIcon, BellIcon, RunnersIcon, ArrowUpCircleIcon, LifeBuoyIcon, GitPullRequestIcon } from './icons.js';
+import { CirclePlusIcon, PanelLeftIcon, MessageIcon, ClusterIcon, BellIcon, RunnersIcon, ArrowUpCircleIcon, LifeBuoyIcon, GitPullRequestIcon, SettingsIcon, ClockIcon, ZapIcon } from './icons.js';
 import { getUnreadNotificationCount, getPullRequestCount, getAppVersion } from '../actions.js';
 import { SidebarHistory } from './sidebar-history.js';
 import { SidebarUserNav } from './sidebar-user-nav.js';
@@ -221,6 +221,60 @@ export function AppSidebar({ user }) {
                 </TooltipTrigger>
                 {collapsed && (
                   <TooltipContent side="right">Notifications</TooltipContent>
+                )}
+              </Tooltip>
+            </SidebarMenuItem>
+
+            {/* Settings */}
+            <SidebarMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    href="/settings"
+                    className={collapsed ? 'justify-center' : ''}
+                  >
+                    <SettingsIcon size={16} />
+                    {!collapsed && <span>Settings</span>}
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right">Settings</TooltipContent>
+                )}
+              </Tooltip>
+            </SidebarMenuItem>
+
+            {/* Crons */}
+            <SidebarMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    href="/settings/crons"
+                    className={collapsed ? 'justify-center' : ''}
+                  >
+                    <ClockIcon size={16} />
+                    {!collapsed && <span>Crons</span>}
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right">Crons</TooltipContent>
+                )}
+              </Tooltip>
+            </SidebarMenuItem>
+
+            {/* Triggers */}
+            <SidebarMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    href="/settings/triggers"
+                    className={collapsed ? 'justify-center' : ''}
+                  >
+                    <ZapIcon size={16} />
+                    {!collapsed && <span>Triggers</span>}
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right">Triggers</TooltipContent>
                 )}
               </Tooltip>
             </SidebarMenuItem>

@@ -33,5 +33,5 @@ COPY --from=builder /app/package.json ./package.json
 
 COPY templates/docker/event-handler/ecosystem.config.cjs /opt/ecosystem.config.cjs
 
-EXPOSE 80
+EXPOSE 40005
 CMD ["pm2-runtime", "/opt/ecosystem.config.cjs"]

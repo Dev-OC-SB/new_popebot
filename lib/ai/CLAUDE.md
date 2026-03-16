@@ -31,6 +31,7 @@ Two agent types, both using `createReactAgent` from `@langchain/langgraph/prebui
 | Anthropic | `anthropic` (default) | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` |
 | OpenAI | `openai` | `gpt-4o` | `OPENAI_API_KEY` |
 | Google | `google` | `gemini-2.5-flash` | `GOOGLE_API_KEY` |
+| OpenRouter | `openrouter` | `minimax/minimax-m2.5` | `OPENROUTER_API_KEY` |
 | Custom | `custom` | — | `OPENAI_BASE_URL`, `CUSTOM_API_KEY` (optional) |
 
 `LLM_MAX_TOKENS` defaults to 4096. Web search available for `anthropic` and `openai` providers only (disable with `WEB_SEARCH=false`).
@@ -43,14 +44,13 @@ Two agent types, both using `createReactAgent` from `@langchain/langgraph/prebui
 
 ## Headless Stream Parser (headless-stream.js)
 
-Three-layer parser for Claude Code agents running in headless Docker containers:
+Three-layer parser for coding agents running in headless Docker containers. Supports both Claude Code (`stream-json`) and Pi coding agent (JSONL session) output formats.
 
 1. **Docker frame decoder** — Parses 8-byte multiplexed stream headers (type + size), extracts stdout frames, discards stderr. Buffers incomplete frames across chunks.
 2. **NDJSON splitter** — Accumulates decoded UTF-8, splits on newlines. Holds incomplete trailing lines for next chunk.
-3. **Event mapper** (`mapLine()`) — Converts each line to chat events:
-   - `assistant` messages: `text` blocks → `{ type: 'text' }`, `tool_use` blocks → `{ type: 'tool-call' }`
-   - `user` messages: `tool_result` blocks → `{ type: 'tool-result' }` (priority: stdout > string content > array)
-   - `result` messages: → `{ type: 'text', _resultSummary }` (injected into LangGraph memory)
+3. **Event mapper** (`mapLine()`) — Auto-detects format and converts each line to chat events:
+   - **Claude Code format** (`type: 'assistant'|'user'`): `text`/`tool_use` blocks → `tool-call`/`tool-result` events
+   - **Pi format** (`type: 'message'`, `message.role`): `text`/`toolCall` blocks, `toolResult`, `bashExecution` → same event types
    - Non-JSON lines (e.g. `NO_CHANGES`, `AGENT_FAILED`): wrapped as plain text events
 
 `parseHeadlessStream(dockerLogStream)` is an async generator consuming `http.IncomingMessage`. `mapLine()` is also reused by `lib/cluster/stream.js` for worker log parsing.

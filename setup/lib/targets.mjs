@@ -21,6 +21,7 @@ export const CONFIG_TARGETS = {
   GOOGLE_API_KEY:        { dbSecret: true, secret: 'AGENT_GOOGLE_API_KEY' },
   CUSTOM_API_KEY:        { dbSecret: true, secret: 'AGENT_CUSTOM_API_KEY' },
   CLAUDE_CODE_OAUTH_TOKEN: { dbSecret: true, secret: 'AGENT_CLAUDE_CODE_OAUTH_TOKEN' },
+  OPENROUTER_API_KEY:    { dbSecret: true, secret: 'AGENT_OPENROUTER_API_KEY' },
   GH_WEBHOOK_SECRET:     { dbSecret: true, secret: true },
   TELEGRAM_BOT_TOKEN:    { dbSecret: true },
   TELEGRAM_WEBHOOK_SECRET: { dbSecret: true },
